@@ -1,28 +1,10 @@
 services:
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
   backend:
     build:
       context: ./back-end
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
       APP_NAME: ShopHub
       # Safe-by-default: debug off unless explicitly opted into via the root
@@ -31,28 +13,26 @@ services:
       # debugging (same override pattern as DEMO_MODE below).
       APP_ENV: ${APP_ENV:-production}
       APP_DEBUG: ${APP_DEBUG:-false}
-      APP_URL: http://localhost:8000
+      APP_URL: http://${PUBLIC_HOST:-localhost}:${BACKEND_PORT:-8000}
       DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: ${MYSQL_DATABASE}
-      DB_USERNAME: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ATTR_SSL_CA: ${MYSQL_ATTR_SSL_CA:-}
       SESSION_DRIVER: file
       QUEUE_CONNECTION: database
       CACHE_STORE: database
       MAIL_MAILER: log
-      FRONTEND_URL: http://localhost:5173
-      SANCTUM_STATEFUL_DOMAINS: localhost:5173
+      FRONTEND_URL: http://${PUBLIC_HOST:-localhost}:${FRONTEND_PORT:-5173}
+      SANCTUM_STATEFUL_DOMAINS: localhost:5173,127.0.0.1:5173,${PUBLIC_HOST:-localhost}:${FRONTEND_PORT:-5173}
       DEMO_MODE: ${DEMO_MODE:-false}
       DEMO_SANDBOX_CONFIRMED: ${DEMO_SANDBOX_CONFIRMED:-false}
       DEMO_ADMIN_EMAIL: ${DEMO_ADMIN_EMAIL}
       DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD}
       DEMO_CUSTOMER_EMAIL: ${DEMO_CUSTOMER_EMAIL}
       DEMO_CUSTOMER_PASSWORD: ${DEMO_CUSTOMER_PASSWORD}
-    depends_on:
-      mysql:
-        condition: service_healthy
     volumes:
       - backend-storage:/var/www/html/storage
 
@@ -61,12 +41,11 @@ services:
       context: ./front-end
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     environment:
-      VITE_API_BASE_URL: http://localhost:8000/api
+      VITE_API_BASE_URL: http://${PUBLIC_HOST:-localhost}:${BACKEND_PORT:-8000}/api
     depends_on:
       - backend
 
 volumes:
-  mysql-data:
   backend-storage:

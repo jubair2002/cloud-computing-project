@@ -11,7 +11,7 @@ Thumbs.db
 /.zed
 /auth.json
 
-# Root .env (docker-compose MySQL/demo credentials) — see .env.example
+# Root .env (docker-compose RDS/demo credentials) — see .env.example
 /.env
 /.env.*
 !/.env.example

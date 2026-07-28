@@ -4,45 +4,6 @@ ShopHub is a full-stack **e-commerce web application** built with a **Laravel RE
 
 ---
 
-## Screenshots
-
-<p align="center">
-  <img src="projects-screenshots/home-page.png" alt="ShopHub home page" width="700">
-</p>
-
-<details>
-<summary><strong>See more screenshots</strong> — storefront, account, and admin panel</summary>
-
-### Storefront
-
-| | |
-|---|---|
-| **Shop** <br> <img src="projects-screenshots/shop-page.png" width="380"> | **Product Detail** <br> <img src="projects-screenshots/product-detail.png" width="380"> |
-| **Cart** <br> <img src="projects-screenshots/cart-modal.png" width="380"> | **Checkout** <br> <img src="projects-screenshots/checkout-modal.png" width="380"> |
-| **Vouchers** <br> <img src="projects-screenshots/vouchers-page.png" width="380"> | |
-
-### Auth & Account
-
-| | |
-|---|---|
-| **Login** <br> <img src="projects-screenshots/login-page.png" width="380"> | **Register** <br> <img src="projects-screenshots/register-page.png" width="380"> |
-| **Account Profile** <br> <img src="projects-screenshots/account-profile.png" width="380"> | **My Orders** <br> <img src="projects-screenshots/my-orders.png" width="380"> |
-| **Admin Login** <br> <img src="projects-screenshots/admin-login.png" width="380"> | |
-
-### Admin Panel
-
-| | |
-|---|---|
-| **Dashboard** <br> <img src="projects-screenshots/admin-dashboard.png" width="380"> | **Products** <br> <img src="projects-screenshots/admin-products.png" width="380"> |
-| **Orders** <br> <img src="projects-screenshots/admin-orders.png" width="380"> | **Categories** <br> <img src="projects-screenshots/admin-categories.png" width="380"> |
-| **Reviews** <br> <img src="projects-screenshots/admin-reviews.png" width="380"> | **Users** <br> <img src="projects-screenshots/admin-users.png" width="380"> |
-| **Careers** <br> <img src="projects-screenshots/admin-careers.png" width="380"> | **Vouchers** <br> <img src="projects-screenshots/admin-vouchers.png" width="380"> |
-| **Flash Sales** <br> <img src="projects-screenshots/admin-flash-sales.png" width="380"> | **Newsletter** <br> <img src="projects-screenshots/admin-newsletters.png" width="380"> |
-
-</details>
-
----
-
 ## Tech Stack
 
 ### Backend (API)
@@ -162,7 +123,7 @@ Both **customers** and **admins** have accounts, authenticated with Sanctum bear
 ### Root
 
 ```
-/docker-compose.yml             # MySQL + backend + frontend, one command to run everything
+/docker-compose.yml             # backend + frontend (RDS via root .env), one command to run everything
 /.github/workflows              # backend.yml + frontend.yml CI
 ```
 
@@ -198,26 +159,25 @@ Make sure `VITE_API_BASE_URL` (front-end `.env`) points at the backend's `/api` 
 
 **Optional — social login:** to enable the Google/Facebook buttons, create OAuth credentials with each provider and set them in `back-end/.env`. Full walkthrough: [`docs/SOCIAL_LOGIN_SETUP.md`](docs/SOCIAL_LOGIN_SETUP.md).
 
-### Option B — Docker
+### Option B — Docker (EC2 / AWS RDS)
 
 ```bash
-cp .env.example .env    # set your own MySQL/demo-admin credentials
+cp .env.example .env    # set RDS credentials, PUBLIC_HOST, and demo-admin credentials
 docker compose up -d --build
 ```
 
-`docker-compose.yml` has no hardcoded credentials — it reads MySQL and demo-admin credentials from a root `.env` (gitignored), which Docker Compose loads automatically. Edit the copied `.env` before starting if you want your own values.
+All Docker configuration comes from the root `.env` only — no edits to `docker-compose.yml` or per-app env files are needed. Set `DB_HOST` to your **AWS RDS endpoint**, and set `PUBLIC_HOST` to `localhost` on your laptop or your **EC2 public IP** when deploying on AWS (open security-group ports `8000` and `5173` for external access). `localhost` on the EC2 instance still works when `PUBLIC_HOST` is the public IP.
 
-This starts MySQL, the backend API (migrated + seeded automatically), and the frontend dev server:
+This starts the backend API (migrated + seeded automatically) and the frontend dev server:
 
-| Service  | URL                          |
-| -------- | ----------------------------- |
-| Frontend | http://localhost:5173         |
-| Backend  | http://localhost:8000         |
-| MySQL    | localhost:3307                |
+| Service  | URL (local)                   | URL (EC2, when `PUBLIC_HOST` is set) |
+| -------- | ----------------------------- | ------------------------------------- |
+| Frontend | http://localhost:5173         | http://\<PUBLIC_HOST\>:5173           |
+| Backend  | http://localhost:8000         | http://\<PUBLIC_HOST\>:8000           |
 
 Seeded admin login: `admin@shophub.test` / `password`. See [`back-end/README.md`](back-end/README.md#docker) and [`front-end/README.md`](front-end/README.md#docker) for details on what each container does.
 
-To stop: `docker compose down` (add `-v` to also wipe the database volume).
+To stop: `docker compose down` (add `-v` to wipe the backend storage volume).
 
 **Demo mode:** set `DEMO_MODE=true` in the root `.env` (it's **off by default**) to add one-click "Try Demo Admin Login" and "Try Demo Customer Login" buttons to `/admin/login` and `/login` — portfolio visitors can explore both sides of the app without credentials. The demo customer account is only seeded while demo mode is on, and the demo accounts are protected from tampering (no edits, deletion, or password resets) so they keep working for every visitor. See [`back-end/README.md`](back-end/README.md#demo-mode) for details.
 

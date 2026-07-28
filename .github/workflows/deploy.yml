@@ -1,0 +1,51 @@
+name: Deploy to EC2
+
+# Runs after code lands on main. Pair this with a branch-protection rule on
+# `main` that requires the "Backend CI" and "Frontend CI" checks to pass
+# before a PR can be merged — that's what actually gates bad code out;
+# this workflow just ships whatever is on main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {} # lets you re-run a deploy manually from the Actions tab
+
+# Prevents two deploys racing each other if you push twice quickly.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync .env and redeploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            # Rewrite the root .env from the GitHub secret every deploy.
+            # Quoting 'ENVEOF' stops the shell from expanding $VARS inside it.
+            cat > ~/shophub/.env << 'ENVEOF'
+            ${{ secrets.PROD_ENV_FILE }}
+            ENVEOF
+            chmod 600 ~/shophub/.env
+
+            cd ~/shophub
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Rebuild only what changed; compose is smart about layer caching.
+            docker compose up -d --build
+
+            # Keep the instance disk from filling up with old image layers.
+            docker image prune -f
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -fsS --max-time 10 "http://${{ secrets.EC2_HOST }}:${{ secrets.BACKEND_PORT || '8000' }}/up" || \
+          echo "::warning::Backend /up didn't respond within 10s of deploy finishing — worth a manual check."
