@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
         unzip \
         libzip-dev \
         libonig-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip fileinfo \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip \
+    && php -m | grep -i '^fileinfo$' \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
