@@ -1,0 +1,123 @@
+# ShopHub complete local run commands
+# ------------------------------------------------------------
+# 1) Repository root
+# ------------------------------------------------------------
+cd /home/abir/Music/shophub-ecommerce
+
+# ------------------------------------------------------------
+# 2) Backend Laravel setup
+# ------------------------------------------------------------
+cd back-end
+
+sudo apt update
+sudo apt install php8.5-curl php8.5-xml -y
+
+sudo apt update
+sudo apt install php8.5-mysql -y
+sudo apt update
+sudo apt install php8.5-mbstring -y
+
+# Install PHP dependencies
+composer install
+
+# Copy backend environment example if needed
+cp .env.example .env
+
+# Generate app key for Laravel
+php artisan key:generate
+
+# Update database configuration in .env
+# Use your local MySQL or RDS values:
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=shophub
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# Run database migrations
+php artisan migrate
+
+# Seed database
+php artisan db:seed
+
+# Optional, but important for uploaded files/images
+php artisan storage:link
+
+# Start Laravel API locally
+php artisan serve --host=0.0.0.0 --port=8000
+
+# Or run via Docker from repo root
+cd ..
+docker compose up -d --build
+
+# ------------------------------------------------------------
+# 3) Backend test commands
+# ------------------------------------------------------------
+cd back-end
+php artisan test
+
+# ------------------------------------------------------------
+# 4) Frontend Vue + Vite setup
+# ------------------------------------------------------------
+cd /home/abir/Music/shophub-ecommerce/front-end
+
+# Install Node dependencies
+npm install
+
+# Create frontend env if needed
+cp .env.example .env
+
+# Build production bundle
+npm run build
+
+# Run frontend dev server locally
+npm run dev -- --host 0.0.0.0
+
+# Or preview production build
+npm run preview -- --host 0.0.0.0
+
+# ------------------------------------------------------------
+# 5) Frontend test commands
+# ------------------------------------------------------------
+cd /home/abir/Music/shophub-ecommerce/front-end
+npm test
+npm run test:watch
+npm run test:coverage
+
+# ------------------------------------------------------------
+# 6) Full local stack from repo root
+# ------------------------------------------------------------
+cd /home/abir/Music/shophub-ecommerce
+
+# Start backend + frontend containers from docker-compose
+# (root .env must be configured with DB_HOST, DB_DATABASE, DB_USERNAME,
+# DB_PASSWORD, PUBLIC_HOST, FRONTEND_URL, SANCTUM_STATEFUL_DOMAINS)
+docker compose up -d --build
+
+# View containers
+
+docker compose ps
+
+# View backend logs
+
+docker compose logs -f backend
+
+# Stop everything
+
+docker compose down
+
+# ------------------------------------------------------------
+# 7) Useful curl checks
+# ------------------------------------------------------------
+curl http://127.0.0.1:8000/up
+curl http://127.0.0.1:8000/api/products
+curl http://127.0.0.1:5173
+
+# ------------------------------------------------------------
+# 8) Frontend API base URL
+# ------------------------------------------------------------
+# In front-end/.env or CI secrets:
+# VITE_API_BASE_URL=http://127.0.0.1:8000/api
+# In production/EC2, use:
+# VITE_API_BASE_URL=http://<BACKEND_PUBLIC_HOST>:8000/api
