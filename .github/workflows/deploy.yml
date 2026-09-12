@@ -44,7 +44,40 @@ jobs:
             export DB_USERNAME="${{ secrets.DB_USERNAME }}"
             export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
 
-            docker compose up -d --build backend
+            if command -v systemctl >/dev/null 2>&1; then
+              sudo systemctl enable --now docker >/dev/null 2>&1 || true
+            fi
+
+            set_compose_cmd() {
+              if docker compose version >/dev/null 2>&1; then
+                COMPOSE_CMD="docker compose"
+                return 0
+              fi
+
+              if command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE_CMD="docker-compose"
+                return 0
+              fi
+
+              return 1
+            }
+
+            if ! set_compose_cmd && command -v apt-get >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y docker-compose-plugin || \
+              sudo apt-get install -y docker-compose-v2 || \
+              sudo apt-get install -y docker-compose
+              set_compose_cmd
+            fi
+
+            if [ -z "${COMPOSE_CMD:-}" ]; then
+              echo "Docker Compose is not installed on this host." >&2
+              exit 1
+            else
+              echo "Using $COMPOSE_CMD"
+            fi
+
+            $COMPOSE_CMD up -d --build backend
             docker image prune -f
 
       - name: Backend health check
