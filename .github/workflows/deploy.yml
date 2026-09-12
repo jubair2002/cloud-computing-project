@@ -23,12 +23,20 @@ jobs:
           port: ${{ secrets.EC2_SSH_PORT || 22 }}
           script: |
             set -e
-            mkdir -p "${{ secrets.BACKEND_DEPLOY_DIR || '$HOME/shophub' }}"
-            cd "${{ secrets.BACKEND_DEPLOY_DIR || '$HOME/shophub' }}"
+            DEPLOY_DIR="${{ secrets.BACKEND_DEPLOY_DIR || '$HOME/shophub' }}"
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            # Use an authenticated URL when a PAT is provided (required for
+            # private repos); fall back to a plain clone for public repos.
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+            if [ -n "${{ secrets.GH_PAT }}" ]; then
+              REPO_URL="https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git"
+            fi
 
             git init >/dev/null 2>&1 || true
-            git remote set-url origin https://github.com/${{ github.repository }}.git || git remote add origin https://github.com/${{ github.repository }}.git
-            git fetch origin main
+            git remote set-url origin "$REPO_URL" || git remote add origin "$REPO_URL"
+            git fetch --depth 1 origin main
             git reset --hard origin/main
 
             cat > .env << 'ENVEOF'
@@ -36,13 +44,18 @@ jobs:
             ENVEOF
             chmod 600 .env
 
-            # Make sure the runtime env file carries the secrets the backend container
-            # needs to talk to the managed RDS database.
+            # Pass-through env vars for docker-compose.yml (the compose file's
+            # backend service must declare these as bare `- VAR_NAME` entries
+            # for docker compose to forward them into the container).
             export DB_HOST="${{ secrets.DB_HOST }}"
             export DB_PORT="${{ secrets.DB_PORT || '3306' }}"
             export DB_DATABASE="${{ secrets.DB_DATABASE }}"
             export DB_USERNAME="${{ secrets.DB_USERNAME }}"
             export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export BACKEND_PORT="${{ secrets.BACKEND_PORT || '8000' }}"
+            export PUBLIC_HOST="${{ secrets.EC2_BACKEND_HOST }}"
+            export FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
+            export SANCTUM_STATEFUL_DOMAINS="${{ secrets.SANCTUM_STATEFUL_DOMAINS }}"
 
             if command -v systemctl >/dev/null 2>&1; then
               sudo systemctl enable --now docker >/dev/null 2>&1 || true
@@ -78,6 +91,11 @@ jobs:
             fi
 
             $COMPOSE_CMD up -d --build backend
+            $COMPOSE_CMD ps backend
+            if ! curl -fsS --retry 12 --retry-delay 5 --retry-connrefused --max-time 10 "http://127.0.0.1:${BACKEND_PORT}/up"; then
+              $COMPOSE_CMD logs --tail=200 backend
+              exit 1
+            fi
             docker image prune -f
 
       - name: Backend health check
@@ -103,10 +121,22 @@ jobs:
         working-directory: front-end
         run: npm ci
 
+      - name: Resolve build variables
+        # If VITE_API_BASE_URL isn't set directly, derive it from
+        # BACKEND_PUBLIC_HOST (falling back to EC2_BACKEND_HOST) so you
+        # only ever need to keep one host value up to date.
+        run: |
+          set -e
+          if [ -n "${{ secrets.VITE_API_BASE_URL }}" ]; then
+            API_URL="${{ secrets.VITE_API_BASE_URL }}"
+          else
+            BACKEND_PUBLIC_HOST="${{ secrets.BACKEND_PUBLIC_HOST || secrets.EC2_BACKEND_HOST }}"
+            API_URL="http://${BACKEND_PUBLIC_HOST}:${{ secrets.BACKEND_PORT || '8000' }}/api"
+          fi
+          echo "VITE_API_BASE_URL=$API_URL" >> "$GITHUB_ENV"
+
       - name: Build frontend bundle
         working-directory: front-end
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: |
           test -n "$VITE_API_BASE_URL"
           npm run build
@@ -175,8 +205,6 @@ jobs:
             fi
 
       - name: Frontend smoke test
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: |
           curl -fsS --max-time 10 "http://${{ secrets.EC2_FRONTEND_HOST }}"
           curl -fsS --max-time 10 "$VITE_API_BASE_URL/products"

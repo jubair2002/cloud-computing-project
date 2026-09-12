@@ -37,4 +37,8 @@ jobs:
         run: npm run test
 
       - name: Type-check & build
+        # CI-only placeholder so the build never depends on the real
+        # deployment API URL. The real value is injected in deploy.yml.
+        env:
+          VITE_API_BASE_URL: "http://localhost:8000/api"
         run: npm run build
