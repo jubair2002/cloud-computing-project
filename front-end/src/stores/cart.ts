@@ -56,9 +56,10 @@ function toLine(item: ServerCartItem): CartLine {
   };
 }
 
-// The cart lives server-side (adding requires an account), so every mutation
-// goes through the API and the response is the new local state. Only buy-now
-// stays client-side — it's a transient express checkout, not cart contents.
+// The cart lives server-side and works for both signed-in and signed-out
+// shoppers, so every mutation goes through the API and the response is the
+// new local state. Only buy-now stays client-side — it's a transient express
+// checkout, not cart contents.
 export const useCartStore = defineStore('cart', () => {
   const items = ref<CartLine[]>([]);
 

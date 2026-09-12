@@ -42,7 +42,7 @@ class OrderController extends Controller
 
         // Demo visitors order as the seeded demo identity — the checkout
         // form is locked in the UI, and enforced here for direct API calls.
-        if ($user->isProtectedDemoAccount()) {
+        if ($user && $user->isProtectedDemoAccount()) {
             $validated['customer_name'] = $user->name;
             $validated['customer_email'] = $user->email;
             $validated['customer_phone'] = $user->phone ?? $validated['customer_phone'];
@@ -147,7 +147,7 @@ class OrderController extends Controller
             $total = $subtotal - $discount + $shippingFee;
 
             $order = Order::create([
-                'user_id' => $user->id,
+                'user_id' => $user?->id,
                 'voucher_id' => $voucher?->id,
                 'voucher_code' => $voucher?->code,
                 'discount' => $discount,

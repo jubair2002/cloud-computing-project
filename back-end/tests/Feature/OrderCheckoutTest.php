@@ -114,7 +114,7 @@ class OrderCheckoutTest extends TestCase
         ]);
     }
 
-    public function test_guest_cannot_checkout(): void
+    public function test_guest_can_checkout_without_signing_in(): void
     {
         Mail::fake();
 
@@ -133,9 +133,9 @@ class OrderCheckoutTest extends TestCase
             ],
         ]);
 
-        $response->assertUnauthorized();
-        $this->assertDatabaseCount('orders', 0);
-        Mail::assertNothingQueued();
+        $response->assertCreated();
+        $this->assertDatabaseHas('orders', ['id' => $response->json('id'), 'user_id' => null]);
+        Mail::assertQueued(OrderConfirmationMail::class);
     }
 
     public function test_checkout_requires_phone_and_shipping_address(): void

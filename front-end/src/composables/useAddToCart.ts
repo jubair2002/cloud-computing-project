@@ -1,34 +1,13 @@
-import { useRoute, useRouter } from "vue-router";
 import { firstValidationError } from "../services/account";
-import { useAuthStore } from "../stores/auth";
 import { useCartStore } from "../stores/cart";
 import { useToastStore } from "../stores/toast";
 
-// Adding to cart requires an account: guests are sent to login and come
-// back to the page they were on via ?redirect=.
+// Guests can add products to cart and checkout without creating an account.
 export function useAddToCart() {
-  const auth = useAuthStore();
   const cartStore = useCartStore();
   const toast = useToastStore();
-  const route = useRoute();
-  const router = useRouter();
 
-  async function ensureSignedIn(
-    guestMessage = "Sign in to add items to your cart."
-  ): Promise<boolean> {
-    if (!auth.initialized) {
-      await auth.fetchUser();
-    }
-
-    if (!auth.isLoggedIn) {
-      toast.info(guestMessage);
-      router.push({
-        name: "CustomerLogin",
-        query: { redirect: route.fullPath },
-      });
-      return false;
-    }
-
+  async function ensureSignedIn(_guestMessage = ""): Promise<boolean> {
     return true;
   }
 

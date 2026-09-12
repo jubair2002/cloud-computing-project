@@ -22,10 +22,17 @@ class CartTest extends TestCase
         ], $attributes));
     }
 
-    public function test_guest_cannot_access_the_cart(): void
+    public function test_guest_can_use_the_cart_without_authentication(): void
     {
-        $this->getJson('/api/cart')->assertUnauthorized();
-        $this->postJson('/api/cart/items', ['product_id' => 1])->assertUnauthorized();
+        $product = $this->makeProduct();
+
+        $this->getJson('/api/cart')->assertOk()->assertJsonPath('items', []);
+
+        $response = $this->postJson('/api/cart/items', ['product_id' => $product->id, 'quantity' => 2]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('items.0.product_id', $product->id);
+        $response->assertJsonPath('items.0.quantity', 2);
     }
 
     public function test_adding_a_product_creates_an_available_cart_line(): void

@@ -54,6 +54,17 @@ back-end/Homestead.json
 back-end/Homestead.yaml
 
 # ======================
+# TERRAFORM
+# ======================
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfplan
+terraform/crash.log
+terraform/*.tfvars
+terraform/*.tfvars.json
+
+# ======================
 # CACHE & TEMP
 # ======================
 npm-debug.log*

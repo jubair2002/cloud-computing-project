@@ -50,7 +50,7 @@ class CartController extends Controller
         }
 
         $line = CartItem::firstOrNew([
-            'user_id' => $request->user()->id,
+            ...$this->ownerScope($request),
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
         ]);
@@ -61,6 +61,8 @@ class CartController extends Controller
         $quantity = min(999, ($line->exists ? $line->quantity : 0) + ($validated['quantity'] ?? 1));
 
         $line->fill([
+            'user_id' => $request->user()?->id,
+            'guest_id' => $request->user() ? null : ($request->header('X-Guest-Id') ?? $request->input('guest_id') ?? $request->ip().':'.$request->userAgent()),
             'product_name' => $product->name,
             'variant_label' => $variant?->labelFor($product),
             'quantity' => $quantity,
@@ -71,7 +73,7 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $cartItem)
     {
-        abort_unless($cartItem->user_id === $request->user()->id, 404);
+        abort_unless($this->ownerMatches($request, $cartItem), 404);
 
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1', 'max:999'],
@@ -84,7 +86,7 @@ class CartController extends Controller
 
     public function destroy(Request $request, CartItem $cartItem)
     {
-        abort_unless($cartItem->user_id === $request->user()->id, 404);
+        abort_unless($this->ownerMatches($request, $cartItem), 404);
 
         $cartItem->delete();
 
@@ -93,7 +95,7 @@ class CartController extends Controller
 
     public function clear(Request $request)
     {
-        CartItem::where('user_id', $request->user()->id)->delete();
+        CartItem::where($this->ownerScope($request))->delete();
 
         return response()->noContent();
     }
@@ -107,7 +109,7 @@ class CartController extends Controller
      */
     private function cartItems(Request $request): array
     {
-        return CartItem::where('user_id', $request->user()->id)
+        return CartItem::where($this->ownerScope($request))
             ->with(['product', 'variant'])
             ->orderBy('id')
             ->get()
@@ -136,5 +138,31 @@ class CartController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    private function ownerScope(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user) {
+            return ['user_id' => $user->id, 'guest_id' => null];
+        }
+
+        $guestId = $request->header('X-Guest-Id') ?? $request->input('guest_id');
+
+        return ['user_id' => null, 'guest_id' => $guestId ?? $request->ip().':'.$request->userAgent()];
+    }
+
+    private function ownerMatches(Request $request, CartItem $cartItem): bool
+    {
+        $user = $request->user();
+
+        if ($user) {
+            return $cartItem->user_id === $user->id;
+        }
+
+        $guestId = $request->header('X-Guest-Id') ?? $request->input('guest_id');
+
+        return $cartItem->guest_id === ($guestId ?? $request->ip().':'.$request->userAgent());
     }
 }

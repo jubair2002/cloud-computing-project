@@ -1,5 +1,17 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
 
+function getGuestId(): string {
+  const existing = localStorage.getItem("guest_id");
+
+  if (existing) {
+    return existing;
+  }
+
+  const generated = `guest-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+  localStorage.setItem("guest_id", generated);
+  return generated;
+}
+
 // No default Content-Type: axios picks application/json for object bodies
 // and multipart/form-data for FormData; forcing JSON here would make axios
 // serialize FormData uploads to JSON, mangling attached files.
@@ -13,6 +25,8 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      config.headers["X-Guest-Id"] = getGuestId();
     }
 
     return config;
