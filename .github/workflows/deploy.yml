@@ -82,8 +82,7 @@ jobs:
 
       - name: Backend health check
         run: |
-          curl -fsS --max-time 10 "http://${{ secrets.EC2_BACKEND_HOST }}:${{ secrets.BACKEND_PORT || '8000' }}/up" || \
-          echo "::warning::Backend /up did not respond from the backend EC2 host."
+          curl -fsS --max-time 10 "http://${{ secrets.EC2_BACKEND_HOST }}:${{ secrets.BACKEND_PORT || '8000' }}/up"
 
   deploy-frontend:
     name: Build and deploy frontend to EC2 frontend host
@@ -107,8 +106,10 @@ jobs:
       - name: Build frontend bundle
         working-directory: front-end
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || format('http://{0}:8000/api', secrets.BACKEND_PUBLIC_HOST) }}
-        run: npm run build
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: |
+          test -n "$VITE_API_BASE_URL"
+          npm run build
 
       - name: Prepare frontend deploy directory
         uses: appleboy/ssh-action@v1.0.3
@@ -119,10 +120,33 @@ jobs:
           port: ${{ secrets.EC2_SSH_PORT || 22 }}
           script: |
             set -e
-            FRONTEND_DEPLOY_DIR="${{ secrets.FRONTEND_DEPLOY_DIR || '$HOME/shophub-frontend' }}"
+            FRONTEND_DEPLOY_DIR="${{ secrets.FRONTEND_DEPLOY_DIR || '/var/www/html' }}"
+            if command -v apt-get >/dev/null 2>&1 && ! command -v nginx >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y nginx
+            fi
+
             sudo mkdir -p "$FRONTEND_DEPLOY_DIR"
             sudo chown -R "$USER:$USER" "$FRONTEND_DEPLOY_DIR"
             find "$FRONTEND_DEPLOY_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+            if command -v nginx >/dev/null 2>&1; then
+              sudo tee /etc/nginx/sites-available/default >/dev/null <<NGINXEOF
+            server {
+                listen 80 default_server;
+                listen [::]:80 default_server;
+
+                root $FRONTEND_DEPLOY_DIR;
+                index index.html;
+
+                location / {
+                    try_files \$uri \$uri/ /index.html;
+                }
+            }
+            NGINXEOF
+              sudo nginx -t
+              sudo systemctl enable --now nginx
+            fi
 
       - name: Upload dist folder to frontend EC2
         uses: appleboy/scp-action@v0.1.7
@@ -132,11 +156,27 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_SSH_PORT || 22 }}
           source: "front-end/dist/*"
-          target: "${{ secrets.FRONTEND_DEPLOY_DIR || '$HOME/shophub-frontend' }}"
+          target: "${{ secrets.FRONTEND_DEPLOY_DIR || '/var/www/html' }}"
           strip_components: 2
           overwrite: true
 
+      - name: Restart frontend web server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_FRONTEND_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT || 22 }}
+          script: |
+            set -e
+            if command -v nginx >/dev/null 2>&1; then
+              sudo nginx -t
+              sudo systemctl reload nginx || sudo systemctl restart nginx
+            fi
+
       - name: Frontend smoke test
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: |
-          curl -fsS --max-time 10 "http://${{ secrets.EC2_FRONTEND_HOST }}" || \
-          echo "::warning::Frontend EC2 smoke check did not return a valid page response."
+          curl -fsS --max-time 10 "http://${{ secrets.EC2_FRONTEND_HOST }}"
+          curl -fsS --max-time 10 "$VITE_API_BASE_URL/products"
