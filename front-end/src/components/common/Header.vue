@@ -44,10 +44,10 @@
         </button>
 
         <!-- Cart -->
-        <button
-          @click="emit('open-cart')"
+        <router-link
+          to="/cart"
           class="relative flex items-center justify-center w-10 h-10 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition"
-          aria-label="Open Cart"
+          aria-label="View Shopping Cart"
         >
           <svg
             class="w-5 h-5"
@@ -69,7 +69,7 @@
           >
             {{ cartStore.count() }}
           </span>
-        </button>
+        </router-link>
 
         <!-- Account -->
         <template v-if="auth.initialized">

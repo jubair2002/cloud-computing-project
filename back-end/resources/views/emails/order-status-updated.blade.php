@@ -26,9 +26,9 @@ Hi {{ $order->customer_name }}, your order status has changed to:
 | Item | Qty | Subtotal |
 | :--- | :-: | -------: |
 @foreach ($order->items as $item)
-| {{ $item->product_name }} | {{ $item->quantity }} | ₱{{ number_format($item->subtotal, 2) }} |
+| {{ $item->product_name }} | {{ $item->quantity }} | ৳{{ number_format($item->subtotal, 2) }} |
 @endforeach
-| | **Total** | **₱{{ number_format($order->total, 2) }}** |
+| | **Total** | **৳{{ number_format($order->total, 2) }}** |
 </x-mail::table>
 
 Thanks,<br>

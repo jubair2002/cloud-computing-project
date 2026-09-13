@@ -60,9 +60,9 @@
           </div>
 
           <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl font-bold text-orange-500">₱{{ effectivePrice }}</span>
+            <span class="text-3xl font-bold text-orange-500">৳{{ effectivePrice }}</span>
             <span v-if="product.original_price" class="text-lg text-gray-400 line-through">
-              ₱{{ product.original_price }}
+              ৳{{ product.original_price }}
             </span>
             <span v-if="discount > 0" class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
               -{{ discount }}%
@@ -300,8 +300,7 @@ async function buyNow() {
     // Buy-now checks out only this item, without touching the cart.
     cartStore.setBuyNow(purchasePayload(), quantity.value);
 
-    // ?checkout=1 is picked up by DefaultLayout, which opens the checkout modal.
-    router.push({ path: route.path, query: { checkout: "1" } });
+    router.push("/checkout");
   } finally {
     buyingNow.value = false;
   }

@@ -50,9 +50,9 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-orange-500 font-bold text-lg">₱{{ product.price }}</span>
+        <span class="text-orange-500 font-bold text-lg">৳{{ product.price }}</span>
         <span v-if="product.original_price" class="text-gray-400 text-sm line-through">
-          ₱{{ product.original_price }}
+          ৳{{ product.original_price }}
         </span>
       </div>
     </div>

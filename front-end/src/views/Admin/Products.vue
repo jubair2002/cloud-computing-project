@@ -69,7 +69,7 @@
             </td>
 
             <td>{{ p.category?.name ?? "—" }}</td>
-            <td>₱{{ p.price }}</td>
+            <td>৳{{ p.price }}</td>
             <td>{{ p.stock_quantity }}</td>
 
             <td>
@@ -174,7 +174,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">Price (₱)</label>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Price (৳)</label>
             <input
               v-model.number="form.price"
               type="number"
@@ -185,7 +185,7 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">Original Price (₱, optional)</label>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Original Price (৳, optional)</label>
             <input
               v-model.number="form.original_price"
               type="number"
@@ -333,7 +333,7 @@
 
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="text-xs text-gray-500">Price override (blank = ₱{{ form.price }})</label>
+                  <label class="text-xs text-gray-500">Price override (blank = ৳{{ form.price }})</label>
                   <input
                     v-model.number="row.price"
                     type="number"

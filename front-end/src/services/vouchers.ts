@@ -20,11 +20,11 @@ export function getPublicVouchers() {
 export function voucherSummary(voucher: Pick<PublicVoucher, "type" | "value" | "max_discount">) {
   if (voucher.type === "percent") {
     const cap = voucher.max_discount
-      ? ` (max ₱${Number(voucher.max_discount).toLocaleString()})`
+      ? ` (max ৳${Number(voucher.max_discount).toLocaleString()})`
       : "";
     return `${Number(voucher.value)}% off${cap}`;
   }
-  return `₱${Number(voucher.value).toLocaleString()} off`;
+  return `৳${Number(voucher.value).toLocaleString()} off`;
 }
 
 export interface VoucherPreview {

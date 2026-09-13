@@ -47,10 +47,10 @@
       </div>
       <div class="flex items-center gap-2">
         <span class="text-orange-500 font-bold text-lg"
-          >₱{{ trending.price }}</span
+          >৳{{ trending.price }}</span
         >
         <span class="text-gray-400 text-sm line-through"
-          >₱{{ trending.originalPrice }}</span
+          >৳{{ trending.originalPrice }}</span
         >
       </div>
     </div>

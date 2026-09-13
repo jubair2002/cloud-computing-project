@@ -1,6 +1,6 @@
 <template>
-  <div class="max-w-lg mx-auto px-4 py-16">
-    <div class="bg-white rounded-2xl shadow p-8 text-center space-y-4">
+  <div class="container mx-auto px-4 py-16">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 text-center space-y-6 max-w-xl mx-auto">
       <!-- Cancelled on Stripe's page -->
       <template v-if="cancelled">
         <div class="text-5xl">🛒</div>

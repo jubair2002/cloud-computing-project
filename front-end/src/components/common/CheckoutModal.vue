@@ -37,7 +37,7 @@
           <p class="font-bold text-lg text-orange-500">{{ placedOrder.order_number }}</p>
         </div>
         <p v-if="Number(placedOrder.discount) > 0" class="text-sm text-green-600 font-medium">
-          You saved ₱{{ Number(placedOrder.discount).toLocaleString() }} with {{ placedOrder.voucher_code }}!
+          You saved ৳{{ Number(placedOrder.discount).toLocaleString() }} with {{ placedOrder.voucher_code }}!
         </p>
         <p class="text-xs text-gray-400">
           Save this order number and your email — you'll need both to track your order.
@@ -130,7 +130,7 @@
                 <span class="font-mono font-bold text-orange-600">{{ voucher.code }}</span>
                 <span class="text-gray-600"> — {{ voucherSummary(voucher) }}</span>
                 <span v-if="voucher.min_spend" class="text-gray-400 text-xs block">
-                  Min spend ₱{{ Number(voucher.min_spend).toLocaleString() }}
+                  Min spend ৳{{ Number(voucher.min_spend).toLocaleString() }}
                 </span>
               </span>
               <span class="text-xs font-semibold text-orange-500 shrink-0">Use</span>
@@ -149,7 +149,7 @@
               <span v-if="item.variant_label" class="text-gray-400">({{ item.variant_label }})</span>
               × {{ item.quantity || 1 }}
             </span>
-            <span>₱{{ (item.price * (item.quantity || 1)).toLocaleString() }}</span>
+            <span>৳{{ (item.price * (item.quantity || 1)).toLocaleString() }}</span>
           </div>
           <div v-if="appliedVoucher" class="flex justify-between text-green-600 mb-1">
             <span>
@@ -164,11 +164,11 @@
                 ✕
               </button>
             </span>
-            <span>−₱{{ Number(appliedVoucher.discount).toLocaleString() }}</span>
+            <span>−৳{{ Number(appliedVoucher.discount).toLocaleString() }}</span>
           </div>
           <div class="flex justify-between font-semibold border-t pt-2 mt-2">
             <span>Total</span>
-            <span class="text-orange-500">₱{{ displayTotal.toLocaleString() }}</span>
+            <span class="text-orange-500">৳{{ displayTotal.toLocaleString() }}</span>
           </div>
         </div>
 

@@ -1,55 +1,46 @@
-# ShopHub complete local run commands
+# ShopHub native run guide: no Docker Compose
 # ------------------------------------------------------------
 # 1) Repository root
 # ------------------------------------------------------------
 cd /home/abir/Music/shophub-ecommerce
 
 # ------------------------------------------------------------
-# 2) Backend Laravel setup
+# 2) Backend Laravel setup (native PHP process)
 # ------------------------------------------------------------
 cd back-end
 
-sudo apt update
-sudo apt install php8.5-curl php8.5-xml -y
-
-sudo apt update
-sudo apt install php8.5-mysql -y
-sudo apt update
-sudo apt install php8.5-mbstring -y
-
-# Install PHP dependencies
+# PHP dependencies
 composer install
 
-# Copy backend environment example if needed
+# Copy backend environment file if needed
 cp .env.example .env
 
-# Generate app key for Laravel
+# Generate app key
 php artisan key:generate
 
-# Update database configuration in .env
-# Use your local MySQL or RDS values:
+# Set database values in .env
 # DB_CONNECTION=mysql
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
 # DB_DATABASE=shophub
 # DB_USERNAME=root
 # DB_PASSWORD=
+# APP_URL=http://127.0.0.1:8000
+# FRONTEND_URL=http://127.0.0.1:5173
+# SANCTUM_STATEFUL_DOMAINS=127.0.0.1:5173,localhost:5173
 
-# Run database migrations
+# Run database migrations and seed products/categories/users
 php artisan migrate
-
-# Seed database
 php artisan db:seed
 
-# Optional, but important for uploaded files/images
+# Optional: make uploaded image files resolvable in storage
 php artisan storage:link
 
-# Start Laravel API locally
+# Start the Laravel API in one terminal
 php artisan serve --host=0.0.0.0 --port=8000
 
-# Or run via Docker from repo root
-cd ..
-docker compose up -d --build
+# Start the queue worker in a second terminal if emails/orders need queue processing
+php artisan queue:work --tries=3 --sleep=3 --timeout=60
 
 # ------------------------------------------------------------
 # 3) Backend test commands
@@ -58,7 +49,7 @@ cd back-end
 php artisan test
 
 # ------------------------------------------------------------
-# 4) Frontend Vue + Vite setup
+# 4) Frontend Vue + Vite setup (native Node process)
 # ------------------------------------------------------------
 cd /home/abir/Music/shophub-ecommerce/front-end
 
@@ -68,13 +59,16 @@ npm install
 # Create frontend env if needed
 cp .env.example .env
 
-# Build production bundle
+# Set the API URL for the browser build
+# VITE_API_BASE_URL=http://127.0.0.1:8000/api
+
+# Build for production or preview locally
 npm run build
 
-# Run frontend dev server locally
+# Run frontend dev server locallyx`
 npm run dev -- --host 0.0.0.0
 
-# Or preview production build
+# Or preview production build locally
 npm run preview -- --host 0.0.0.0
 
 # ------------------------------------------------------------
@@ -86,26 +80,27 @@ npm run test:watch
 npm run test:coverage
 
 # ------------------------------------------------------------
-# 6) Full local stack from repo root
+# 6) EC2 deployment notes (same way as local)
 # ------------------------------------------------------------
-cd /home/abir/Music/shophub-ecommerce
-
-# Start backend + frontend containers from docker-compose
-# (root .env must be configured with DB_HOST, DB_DATABASE, DB_USERNAME,
-# DB_PASSWORD, PUBLIC_HOST, FRONTEND_URL, SANCTUM_STATEFUL_DOMAINS)
-docker compose up -d --build
-
-# View containers
-
-docker compose ps
-
-# View backend logs
-
-docker compose logs -f backend
-
-# Stop everything
-
-docker compose down
+# Do not use Docker Compose for this project.
+# Run the same processes directly on the EC2 instance.
+#
+# Backend EC2:
+#   - clone repo
+#   - install PHP dependencies with composer install
+#   - copy .env.example to .env and set DB_HOST, DB_DATABASE,
+#     DB_USERNAME, DB_PASSWORD, APP_URL, FRONTEND_URL
+#   - php artisan migrate
+#   - php artisan db:seed
+#   - php artisan storage:link
+#   - php artisan serve --host=0.0.0.0 --port=8000
+#   - php artisan queue:work --tries=3 --sleep=3 --timeout=60
+#
+# Frontend EC2:
+#   - build front-end with npm run build
+#   - set VITE_API_BASE_URL to the backend EC2 public URL, for example
+#     http://<BACKEND_PUBLIC_HOST>:8000/api
+#   - host the generated dist folder through Nginx/Apache.
 
 # ------------------------------------------------------------
 # 7) Useful curl checks
@@ -119,5 +114,5 @@ curl http://127.0.0.1:5173
 # ------------------------------------------------------------
 # In front-end/.env or CI secrets:
 # VITE_API_BASE_URL=http://127.0.0.1:8000/api
-# In production/EC2, use:
+# On EC2 or production:
 # VITE_API_BASE_URL=http://<BACKEND_PUBLIC_HOST>:8000/api

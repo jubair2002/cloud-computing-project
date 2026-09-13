@@ -20,10 +20,10 @@
 
     <div class="flex items-center gap-2 mb-2">
       <span class="text-orange-500 font-bold text-lg"
-        >₱{{ product.price }}</span
+        >৳{{ product.price }}</span
       >
       <span class="text-gray-400 text-sm line-through"
-        >₱{{ product.originalPrice }}</span
+        >৳{{ product.originalPrice }}</span
       >
     </div>
 

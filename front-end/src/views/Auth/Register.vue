@@ -1,9 +1,10 @@
 <template>
-  <div class="max-w-md mx-auto my-16 px-4">
-    <div class="bg-white p-8 rounded-lg shadow-md">
-      <h1 class="text-2xl font-bold text-center mb-6 text-gradient-primary">
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-lg mx-auto bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-gray-100">
+      <h1 class="text-2xl sm:text-3xl font-bold text-center mb-2 font-display text-gradient-primary">
         Create Your Account
       </h1>
+      <p class="text-center text-gray-500 text-sm mb-6">Join ShopHub to get access to exclusive deals and seamless checkout.</p>
 
       <SocialLoginButtons :providers="socialProviders" />
 
@@ -19,33 +20,33 @@
 
       <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
-          <label class="block mb-1 font-medium" for="name">Full Name</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="name">Full Name</label>
           <input
             v-model="form.name"
             id="name"
             type="text"
             required
             autocomplete="name"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
             placeholder="Juan Dela Cruz"
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium" for="email">Email</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="email">Email</label>
           <input
             v-model="form.email"
             id="email"
             type="email"
             required
             autocomplete="username"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium" for="password">Password</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="password">Password</label>
           <input
             v-model="form.password"
             id="password"
@@ -53,13 +54,13 @@
             required
             minlength="8"
             autocomplete="new-password"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
             placeholder="At least 8 characters"
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium" for="password_confirmation">Confirm Password</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="password_confirmation">Confirm Password</label>
           <input
             v-model="form.password_confirmation"
             id="password_confirmation"
@@ -67,7 +68,7 @@
             required
             minlength="8"
             autocomplete="new-password"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
             placeholder="Repeat your password"
           />
         </div>
@@ -75,7 +76,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition disabled:opacity-50"
+          class="w-full gradient-primary text-white py-3 rounded-xl font-semibold shadow hover:opacity-90 transition disabled:opacity-50 text-sm"
         >
           {{ loading ? "Creating account..." : "Create Account" }}
         </button>
@@ -83,7 +84,7 @@
 
       <p class="mt-6 text-sm text-center text-gray-600">
         Already have an account?
-        <router-link to="/login" class="text-orange-500 font-medium hover:underline">
+        <router-link to="/login" class="text-orange-500 font-semibold hover:underline">
           Sign in
         </router-link>
       </p>

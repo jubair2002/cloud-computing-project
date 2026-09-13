@@ -9,6 +9,8 @@ import AdminLayout from "../layouts/AdminLayout.vue";
 import Home from "../views/Home.vue";
 import Shop from "../views/Shop.vue";
 import ProductDetail from "../views/ProductDetail.vue";
+import Cart from "../views/Cart.vue";
+import Checkout from "../views/Checkout.vue";
 import Vouchers from "../views/Vouchers.vue";
 import InfoPage from "../views/InfoPage.vue";
 import CheckoutReturn from "../views/CheckoutReturn.vue";
@@ -61,6 +63,17 @@ const routes = [
         path: "products/:slug",
         name: "ProductDetail",
         component: ProductDetail,
+      },
+      {
+        path: "cart",
+        name: "Cart",
+        component: Cart,
+      },
+      {
+        path: "checkout",
+        name: "Checkout",
+        component: Checkout,
+        meta: { requiresAuth: true },
       },
       {
         path: "vouchers",

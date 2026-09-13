@@ -44,7 +44,7 @@
             <p class="text-sm font-medium truncate">{{ product.name }}</p>
             <p v-if="product.category" class="text-xs text-gray-400">{{ product.category.name }}</p>
           </div>
-          <span class="text-orange-500 font-semibold text-sm shrink-0">₱{{ product.price }}</span>
+          <span class="text-orange-500 font-semibold text-sm shrink-0">৳{{ product.price }}</span>
         </button>
 
         <button

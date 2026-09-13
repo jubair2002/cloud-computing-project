@@ -76,7 +76,7 @@
               </p>
               <template v-else>
                 <p class="text-orange-500 font-bold">
-                  ₱{{ (item.price * item.quantity).toLocaleString() }}
+                  ৳{{ (item.price * item.quantity).toLocaleString() }}
                 </p>
                 <div class="flex items-center gap-2 mt-2">
                   <button
@@ -128,7 +128,7 @@
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold">Total:</span>
           <span class="font-bold text-xl text-orange-500"
-            >₱{{ totalPrice }}</span
+            >৳{{ totalPrice }}</span
           >
         </div>
         <button

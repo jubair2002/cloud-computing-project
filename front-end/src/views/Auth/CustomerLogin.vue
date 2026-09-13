@@ -1,9 +1,10 @@
 <template>
-  <div class="max-w-md mx-auto my-16 px-4">
-    <div class="bg-white p-8 rounded-lg shadow-md">
-      <h1 class="text-2xl font-bold text-center mb-6 text-gradient-primary">
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-lg mx-auto bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-gray-100">
+      <h1 class="text-2xl sm:text-3xl font-bold text-center mb-2 font-display text-gradient-primary">
         Sign In to ShopHub
       </h1>
+      <p class="text-center text-gray-500 text-sm mb-6">Welcome back! Please enter your details.</p>
 
       <div
         v-if="route.query.reset"
@@ -56,40 +57,40 @@
 
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="block mb-1 font-medium" for="email">Email</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="email">Email</label>
           <input
             v-model="email"
             id="email"
             type="email"
             required
             autocomplete="username"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium" for="password">Password</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="password">Password</label>
           <input
             v-model="password"
             id="password"
             type="password"
             required
             autocomplete="current-password"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-            placeholder="********"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
+            placeholder="••••••••"
           />
         </div>
 
         <div class="text-right">
           <span
             v-if="isDemoEmail"
-            class="text-sm text-gray-400 cursor-not-allowed"
+            class="text-xs text-gray-400 cursor-not-allowed"
             title="Password resets are disabled for the shared demo account"
           >
             Forgot password?
           </span>
-          <router-link v-else to="/forgot-password" class="text-sm text-orange-500 hover:underline">
+          <router-link v-else to="/forgot-password" class="text-xs font-semibold text-orange-500 hover:underline">
             Forgot password?
           </router-link>
         </div>
@@ -97,7 +98,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition disabled:opacity-50"
+          class="w-full gradient-primary text-white py-3 rounded-xl font-semibold shadow hover:opacity-90 transition disabled:opacity-50 text-sm"
         >
           {{ loading ? "Signing in..." : "Sign In" }}
         </button>

@@ -48,7 +48,7 @@
             <td class="p-4 font-medium">{{ order.order_number }}</td>
             <td>{{ order.customer_name }}</td>
             <td>{{ order.items_count ?? order.items?.length ?? 0 }} item(s)</td>
-            <td class="font-semibold">₱{{ Number(order.total).toLocaleString() }}</td>
+            <td class="font-semibold">৳{{ Number(order.total).toLocaleString() }}</td>
 
             <td>
               <span
@@ -171,9 +171,9 @@
                       {{ item.product_name }}
                       <span v-if="item.variant_label" class="text-gray-400 text-xs block">{{ item.variant_label }}</span>
                     </td>
-                    <td class="p-3">₱{{ Number(item.product_price).toLocaleString() }}</td>
+                    <td class="p-3">৳{{ Number(item.product_price).toLocaleString() }}</td>
                     <td class="p-3">{{ item.quantity }}</td>
-                    <td class="p-3 text-right">₱{{ Number(item.subtotal).toLocaleString() }}</td>
+                    <td class="p-3 text-right">৳{{ Number(item.subtotal).toLocaleString() }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -184,19 +184,19 @@
           <div class="bg-gray-50 rounded-lg p-4 space-y-1 text-sm">
             <div class="flex justify-between text-gray-600">
               <span>Subtotal</span>
-              <span>₱{{ Number(viewingOrder.subtotal).toLocaleString() }}</span>
+              <span>৳{{ Number(viewingOrder.subtotal).toLocaleString() }}</span>
             </div>
             <div class="flex justify-between text-gray-600">
               <span>Shipping Fee</span>
-              <span>₱{{ Number(viewingOrder.shipping_fee).toLocaleString() }}</span>
+              <span>৳{{ Number(viewingOrder.shipping_fee).toLocaleString() }}</span>
             </div>
             <div v-if="Number(viewingOrder.discount) > 0" class="flex justify-between text-green-600">
               <span>Discount ({{ viewingOrder.voucher_code }})</span>
-              <span>−₱{{ Number(viewingOrder.discount).toLocaleString() }}</span>
+              <span>−৳{{ Number(viewingOrder.discount).toLocaleString() }}</span>
             </div>
             <div class="flex justify-between font-semibold text-base pt-1 border-t">
               <span>Total</span>
-              <span>₱{{ Number(viewingOrder.total).toLocaleString() }}</span>
+              <span>৳{{ Number(viewingOrder.total).toLocaleString() }}</span>
             </div>
           </div>
 

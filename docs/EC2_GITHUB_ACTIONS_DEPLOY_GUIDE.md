@@ -1,9 +1,11 @@
 # EC2 GitHub Actions deployment guide
 
-This repository can be deployed in two separate EC2 targets:
+This repository is expected to run in the same native way on EC2 that it runs locally:
 
-- Backend EC2 host: runs the Laravel API and queue/process service stack.
+- Backend EC2 host: runs the Laravel API and the queue worker as native PHP processes.
 - Frontend EC2 host: hosts the built Vue static assets from the `front-end/dist` directory.
+
+No Docker Compose, Docker container, or containerized database layer is required for the EC2 target.
 
 The deployment workflow in `.github/workflows/deploy.yml` expects the following GitHub repository secrets.
 
@@ -115,7 +117,8 @@ You should pass the backend public host through GitHub Actions as the `BACKEND_P
 Use two EC2 machines:
 
 1. Backend EC2
-   - Clones the repository and runs the Laravel PHP service using the docker compose file.
+   - Clones the repository and runs the Laravel PHP service directly with `php artisan serve --host=0.0.0.0 --port=8000`.
+   - Runs a queue worker as a native process with `php artisan queue:work`.
    - Stores `back-end/.env` from `BACKEND_PROD_ENV_FILE`.
    - Exposes port `8000` through the security group.
 
@@ -135,3 +138,4 @@ The repository already has CI workflows for backend and frontend in `.github/wor
 - Put the SSH private key in `EC2_SSH_KEY` rather than checking it into version control.
 - Rotate `APP_KEY`, database passwords, and OAuth keys on every production deployment when needed.
 - Use `APP_ENV=production` and `APP_DEBUG=false` for a real EC2 deployment.
+- Do not require Docker Compose for EC2. Run the app the same way the project is run locally: Laravel PHP and a Node/Vite build for the frontend.

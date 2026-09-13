@@ -131,7 +131,7 @@ const slides: Slide[] = [
   },
   {
     title: "Free Shipping",
-    subtitle: "On Orders Over ₱500",
+    subtitle: "On Orders Over ৳500",
     buttonText: "Start Shopping",
     gradientClass: "gradient-accent",
     textColor: "text-gray-900",

@@ -49,7 +49,7 @@
               </p>
             </td>
             <td>{{ discountSummary(voucher) }}</td>
-            <td>{{ voucher.min_spend ? `₱${Number(voucher.min_spend).toLocaleString()}` : "—" }}</td>
+            <td>{{ voucher.min_spend ? `৳${Number(voucher.min_spend).toLocaleString()}` : "—" }}</td>
             <td class="text-xs">{{ validitySummary(voucher) }}</td>
             <td>
               {{ voucher.used_count }} / {{ voucher.usage_limit ?? "∞" }}
@@ -158,7 +158,7 @@
 
           <div>
             <label class="block mb-1 text-sm font-medium text-gray-700">
-              {{ form.type === "percent" ? "Percent off (%)" : "Amount off (₱)" }}
+              {{ form.type === "percent" ? "Percent off (%)" : "Amount off (৳)" }}
             </label>
             <input
               v-model.number="form.value"
@@ -172,7 +172,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div v-if="form.type === 'percent'">
-            <label class="block mb-1 text-sm font-medium text-gray-700">Max discount (₱, optional)</label>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Max discount (৳, optional)</label>
             <input
               v-model.number="form.max_discount"
               type="number"
@@ -183,7 +183,7 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">Min spend (₱, optional)</label>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Min spend (৳, optional)</label>
             <input
               v-model.number="form.min_spend"
               type="number"
@@ -294,11 +294,11 @@ onMounted(loadVouchers);
 function discountSummary(voucher: Voucher) {
   if (voucher.type === "percent") {
     const cap = voucher.max_discount
-      ? ` (max ₱${Number(voucher.max_discount).toLocaleString()})`
+      ? ` (max ৳${Number(voucher.max_discount).toLocaleString()})`
       : "";
     return `${Number(voucher.value)}% off${cap}`;
   }
-  return `₱${Number(voucher.value).toLocaleString()} off`;
+  return `৳${Number(voucher.value).toLocaleString()} off`;
 }
 
 function validitySummary(voucher: Voucher) {

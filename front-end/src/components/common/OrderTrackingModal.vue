@@ -86,13 +86,13 @@
                 <span v-if="item.variant_label" class="text-gray-400">({{ item.variant_label }})</span>
                 × {{ item.quantity }}
               </span>
-              <span>₱{{ item.subtotal }}</span>
+              <span>৳{{ item.subtotal }}</span>
             </li>
           </ul>
           <p v-if="Number(result.discount) > 0" class="text-sm text-green-600 text-right">
-            Discount ({{ result.voucher_code }}): −₱{{ result.discount }}
+            Discount ({{ result.voucher_code }}): −৳{{ result.discount }}
           </p>
-          <p class="text-sm font-semibold text-right">Total: ₱{{ result.total }}</p>
+          <p class="text-sm font-semibold text-right">Total: ৳{{ result.total }}</p>
         </div>
 
         <!-- Error -->
