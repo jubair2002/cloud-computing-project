@@ -303,7 +303,7 @@ router.beforeEach(async (to) => {
   }
 
   if (guestOnly && auth.isLoggedIn) {
-    return { name: "AccountProfile" };
+    return auth.isAdmin ? { name: "AdminDashboard" } : { name: "AccountProfile" };
   }
 
   return true;

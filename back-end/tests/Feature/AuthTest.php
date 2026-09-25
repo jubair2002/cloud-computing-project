@@ -10,15 +10,16 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_login_with_correct_credentials(): void
+    public function test_customer_can_login_with_correct_credentials(): void
     {
         $user = User::factory()->create([
-            'email' => 'admin@example.com',
+            'email' => 'customer@example.com',
             'password' => bcrypt('secret123'),
+            'is_admin' => false,
         ]);
 
         $response = $this->postJson('/api/login', [
-            'email' => 'admin@example.com',
+            'email' => 'customer@example.com',
             'password' => 'secret123',
         ]);
 
@@ -27,11 +28,75 @@ class AuthTest extends TestCase
         $response->assertJsonStructure(['user', 'token']);
     }
 
-    public function test_login_fails_with_wrong_password(): void
+    public function test_admin_cannot_login_via_customer_endpoint(): void
     {
-        User::factory()->create(['email' => 'admin@example.com']);
+        User::factory()->create([
+            'email' => 'admin@example.com',
+            'password' => bcrypt('secret123'),
+            'is_admin' => true,
+        ]);
 
         $response = $this->postJson('/api/login', [
+            'email' => 'admin@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertForbidden();
+        $response->assertJson(['message' => 'Admin accounts must sign in via the admin portal at /admin.']);
+    }
+
+    public function test_admin_can_login_via_admin_endpoint(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'admin@example.com',
+            'password' => bcrypt('secret123'),
+            'is_admin' => true,
+        ]);
+
+        $response = $this->postJson('/api/admin/login', [
+            'email' => 'admin@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('user.id', $admin->id);
+        $response->assertJsonStructure(['user', 'token']);
+    }
+
+    public function test_customer_cannot_login_via_admin_endpoint(): void
+    {
+        User::factory()->create([
+            'email' => 'customer@example.com',
+            'password' => bcrypt('secret123'),
+            'is_admin' => false,
+        ]);
+
+        $response = $this->postJson('/api/admin/login', [
+            'email' => 'customer@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertForbidden();
+        $response->assertJson(['message' => 'Access denied. Administrator privileges required.']);
+    }
+
+    public function test_login_fails_with_wrong_password(): void
+    {
+        User::factory()->create(['email' => 'shopper@example.com', 'is_admin' => false]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => 'shopper@example.com',
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    public function test_admin_login_fails_with_wrong_password(): void
+    {
+        User::factory()->create(['email' => 'admin@example.com', 'is_admin' => true]);
+
+        $response = $this->postJson('/api/admin/login', [
             'email' => 'admin@example.com',
             'password' => 'wrong-password',
         ]);

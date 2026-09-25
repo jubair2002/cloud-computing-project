@@ -85,6 +85,11 @@ class SocialAuthController extends Controller
             return $user;
         });
 
+        // Storefront social login is strictly for customers — admin accounts cannot sign in here
+        if ($user->is_admin) {
+            return $this->redirectToSpa(['error' => 'admin_not_allowed']);
+        }
+
         $token = $user->createToken('vue-token')->plainTextToken;
 
         return $this->redirectToSpa(['token' => $token]);

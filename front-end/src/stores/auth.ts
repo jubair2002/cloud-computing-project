@@ -21,6 +21,20 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function login(credentials: { email: string; password: string }) {
     const { data } = await api.post("/login", credentials);
+    if (data.user?.is_admin) {
+      throw new Error("Admin accounts must sign in via the admin portal at /admin.");
+    }
+    localStorage.setItem("token", data.token);
+    user.value = data.user;
+    initialized.value = true;
+    useCartStore().load();
+  }
+
+  async function adminLogin(credentials: { email: string; password: string }) {
+    const { data } = await api.post("/admin/login", credentials);
+    if (!data.user?.is_admin) {
+      throw new Error("Access denied. Administrator privileges required.");
+    }
     localStorage.setItem("token", data.token);
     user.value = data.user;
     initialized.value = true;
@@ -90,6 +104,7 @@ export const useAuthStore = defineStore("auth", () => {
     isLoggedIn,
     isAdmin,
     login,
+    adminLogin,
     loginWithToken,
     register,
     logout,

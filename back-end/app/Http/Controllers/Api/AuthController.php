@@ -57,7 +57,45 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        // Storefront login is strictly for regular customers. Admin accounts
+        // must authenticate exclusively via the admin portal (/admin).
+        if ($user->is_admin) {
+            return response()->json([
+                'message' => 'Admin accounts must sign in via the admin portal at /admin.',
+            ], 403);
+        }
+
         $token = $user->createToken('vue-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function adminLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        $hash = ($user && $user->password) ? $user->password : self::TIMING_HASH;
+
+        if (! Hash::check($credentials['password'], $hash) || ! $user || ! $user->password) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        // The admin endpoint is strictly for administrators.
+        if (! $user->is_admin) {
+            return response()->json([
+                'message' => 'Access denied. Administrator privileges required.',
+            ], 403);
+        }
+
+        $token = $user->createToken('admin-token')->plainTextToken;
 
         return response()->json([
             'user' => $user,

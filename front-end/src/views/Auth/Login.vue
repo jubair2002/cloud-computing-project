@@ -1,74 +1,94 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-      <h1 class="text-2xl font-bold text-center mb-6 text-gradient-primary">
-        Login to ShopHub
-      </h1>
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div class="max-w-md w-full bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-gray-100">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl gradient-primary text-white font-bold text-xl mb-3 shadow-md">
+          S
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold font-display text-gray-800">
+          Admin Portal
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">Sign in with your administrator credentials</p>
+      </div>
 
       <!-- Demo mode -->
-      <div v-if="demoConfig?.demo_mode" class="mb-6 p-4 rounded-lg bg-orange-50 border border-orange-200 text-center">
+      <div
+        v-if="demoConfig?.demo_mode && demoConfig?.demo_admin_email"
+        class="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-200 text-center"
+      >
         <p class="text-sm text-gray-600 mb-3">
-          This is a portfolio demo — skip the form and explore the admin panel instantly.
+          This is a portfolio demo — explore the admin panel instantly.
         </p>
         <button
           type="button"
           :disabled="loading"
-          class="w-full gradient-primary text-white py-2 rounded font-semibold hover:opacity-90 transition disabled:opacity-50"
+          class="w-full gradient-primary text-white py-2.5 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 text-sm shadow-sm"
           @click="handleDemoLogin"
         >
           {{ loading ? "Logging in..." : "Try Demo Admin Login" }}
         </button>
       </div>
 
-      <div v-if="demoConfig?.demo_mode" class="flex items-center gap-3 mb-6">
+      <div
+        v-if="demoConfig?.demo_mode && demoConfig?.demo_admin_email"
+        class="flex items-center gap-3 mb-6"
+      >
         <div class="flex-1 h-px bg-gray-200"></div>
-        <span class="text-xs text-gray-400 uppercase">or log in manually</span>
+        <span class="text-xs text-gray-400 uppercase tracking-wider">or sign in manually</span>
         <div class="flex-1 h-px bg-gray-200"></div>
       </div>
 
       <!-- Error Message -->
-      <div v-if="errorMessage" class="mb-4 text-red-500 text-sm text-center">
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center"
+      >
         {{ errorMessage }}
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="block mb-1 font-medium" for="email">Email</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="email">
+            Admin Email
+          </label>
           <input
             v-model="email"
             id="email"
             type="email"
             required
             autocomplete="username"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-            placeholder="you@example.com"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
+            placeholder="admin@shophub.test"
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium" for="password">Password</label>
+          <label class="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wider" for="password">
+            Password
+          </label>
           <input
             v-model="password"
             id="password"
             type="password"
             required
             autocomplete="current-password"
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-            placeholder="********"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm transition"
+            placeholder="••••••••"
           />
         </div>
 
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition"
+          class="w-full gradient-primary text-white py-3 rounded-xl font-semibold shadow hover:opacity-90 transition disabled:opacity-50 text-sm"
         >
-          {{ loading ? "Logging in..." : "Login" }}
+          {{ loading ? "Signing in..." : "Sign In to Admin" }}
         </button>
       </form>
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -87,7 +107,7 @@ const loading = ref(false);
 const demoConfig = ref<AppConfig | null>(null);
 
 onMounted(async () => {
-  if (auth.user) {
+  if (auth.isAdmin) {
     router.replace("/admin");
     return;
   }
@@ -112,26 +132,23 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await auth.login({
+    await auth.adminLogin({
       email: email.value,
       password: password.value,
     });
 
-    // Non-admins would just bounce off the /admin guard back to this page —
-    // tell them what's happening instead of looping.
     if (!auth.isAdmin) {
-      useToastStore().info("This account has no admin access — taking you to the shop.");
-      router.push("/");
+      await auth.logout();
+      errorMessage.value = "Access denied. Administrator privileges required.";
       return;
     }
 
-    useToastStore().success(`Welcome back, ${auth.user?.name ?? "admin"}!`);
+    useToastStore().success(`Welcome back, ${auth.user?.name ?? "Admin"}!`);
     router.push("/admin");
   } catch (error) {
     const err = error as AxiosError<{ message?: string }>;
-
     errorMessage.value =
-      err.response?.data?.message || "Login failed. Try again.";
+      err.response?.data?.message || (error as Error).message || "Login failed. Try again.";
   } finally {
     loading.value = false;
   }

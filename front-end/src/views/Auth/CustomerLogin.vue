@@ -51,8 +51,16 @@
         <div class="flex-1 h-px bg-gray-200"></div>
       </div>
 
-      <div v-if="errorMessage" class="mb-4 text-red-500 text-sm text-center">
-        {{ errorMessage }}
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center"
+      >
+        <p>{{ errorMessage }}</p>
+        <div v-if="errorMessage.toLowerCase().includes('admin')" class="mt-2">
+          <router-link to="/admin" class="font-semibold text-orange-600 hover:text-orange-700 underline">
+            Go to Admin Login &rarr;
+          </router-link>
+        </div>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
@@ -139,7 +147,7 @@ const demoConfig = ref<AppConfig | null>(null);
 const isDemoEmail = computed(() => {
   const typed = email.value.trim().toLowerCase();
   if (!typed || !demoConfig.value?.demo_mode) return false;
-  return [demoConfig.value.demo_admin_email, demoConfig.value.demo_customer_email]
+  return [demoConfig.value.demo_customer_email]
     .filter((e): e is string => !!e)
     .some((e) => e.toLowerCase() === typed);
 });
@@ -170,18 +178,21 @@ async function handleLogin() {
       password: password.value,
     });
 
+    if (auth.isAdmin) {
+      await auth.logout();
+      errorMessage.value = "Admin accounts cannot sign in here. Please log in at /admin.";
+      return;
+    }
+
     toast.success(`Welcome back, ${auth.user?.name ?? "shopper"}!`);
 
-    if (auth.isAdmin) {
-      router.push("/admin");
-    } else {
-      // Same-origin paths only — never trust ?redirect= blindly.
-      const target = (route.query.redirect as string) || "/";
-      router.push(target.startsWith("/") && !target.startsWith("//") ? target : "/");
-    }
+    // Same-origin paths only — never trust ?redirect= blindly.
+    const target = (route.query.redirect as string) || "/";
+    router.push(target.startsWith("/") && !target.startsWith("//") ? target : "/");
   } catch (error) {
     const err = error as AxiosError<{ message?: string }>;
-    errorMessage.value = err.response?.data?.message || "Login failed. Try again.";
+    errorMessage.value =
+      err.response?.data?.message || (error as Error).message || "Login failed. Try again.";
   } finally {
     loading.value = false;
   }
